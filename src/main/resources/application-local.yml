@@ -7,9 +7,9 @@ spring:
     include: common
   datasource:
     username: root
-    password: Nguyenvietket2906
+    password: Nguyenhuylong@
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/warehouse?useUnicode=yes&characterEncoding=UTF-8
+    url: jdbc:mysql://127.0.0.1:3306/graduation_project?useUnicode=yes&characterEncoding=UTF-8
   jpa:
     hibernate:
       show-sql: true
@@ -50,7 +50,7 @@ application:
     font: font/
   mail:
     enable: true
-    add-emails-in-to-address: ketnguyen2906@gmail.com
+    add-emails-in-to-address: longnguyenhuy1402@gmail.com
     add-emails-in-cc-address:
 
 
