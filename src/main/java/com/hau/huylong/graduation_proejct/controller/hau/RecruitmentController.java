@@ -19,31 +19,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/recruitments")
 @AllArgsConstructor
 @Api(value = "API hồ sơ tuyển dụng")
-public class RecruitmentController extends APIController<RecruitmentProfileDTO, SearchRecruitmentProfileRequest> {
+public class RecruitmentController {
     private final RecruitmentProfileService recruitmentProfileService;
 
-    @Override
+    @PostMapping
     public ResponseEntity<APIResponse<RecruitmentProfileDTO>> save(@RequestBody RecruitmentProfileDTO recruitmentProfileDTO) throws JsonProcessingException {
         return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.save(recruitmentProfileDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<RecruitmentProfileDTO>> edit(Long id, @RequestBody RecruitmentProfileDTO recruitmentProfileDTO) {
+    @PutMapping("/{id}")
+    public ResponseEntity<APIResponse<RecruitmentProfileDTO>> edit(@PathVariable Long id, @RequestBody RecruitmentProfileDTO recruitmentProfileDTO) {
         return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.edit(id, recruitmentProfileDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<Void>> delete(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<Void>> delete(@PathVariable Long id) {
         recruitmentProfileService.delete(id);
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @Override
-    public ResponseEntity<APIResponse<RecruitmentProfileDTO>> findById(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<RecruitmentProfileDTO>> findById(@PathVariable Long id) {
         return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.findById(id)));
     }
 
-    @Override
+    @GetMapping
     public ResponseEntity<APIResponse<PageDataResponse<RecruitmentProfileDTO>>> getAll(SearchRecruitmentProfileRequest request) {
         return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.getAll(request)));
     }

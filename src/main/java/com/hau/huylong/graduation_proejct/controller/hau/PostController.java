@@ -10,39 +10,37 @@ import com.hau.huylong.graduation_proejct.service.PostService;
 import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/posts")
 @AllArgsConstructor
 @Api(value = "API bài viết")
-public class PostController extends APIController<PostDTO, SearchPostRequest> {
+public class PostController {
     private final PostService postService;
 
-    @Override
+    @PostMapping
     public ResponseEntity<APIResponse<PostDTO>> save(@RequestBody PostDTO postDTO) throws JsonProcessingException {
         return ResponseEntity.ok(APIResponse.success(postService.save(postDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<PostDTO>> edit(Long id, @RequestBody PostDTO postDTO) {
+    @PutMapping("/{id}")
+    public ResponseEntity<APIResponse<PostDTO>> edit(@PathVariable Long id, @RequestBody PostDTO postDTO) {
         return ResponseEntity.ok(APIResponse.success(postService.edit(id, postDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<Void>> delete(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<Void>> delete(@PathVariable Long id) {
         postService.delete(id);
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @Override
-    public ResponseEntity<APIResponse<PostDTO>> findById(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<PostDTO>> findById(@PathVariable Long id) {
         return ResponseEntity.ok(APIResponse.success(postService.findById(id)));
     }
 
-    @Override
+    @GetMapping
     public ResponseEntity<APIResponse<PageDataResponse<PostDTO>>> getAll(SearchPostRequest request) {
         return ResponseEntity.ok(APIResponse.success(postService.getAll(request)));
     }

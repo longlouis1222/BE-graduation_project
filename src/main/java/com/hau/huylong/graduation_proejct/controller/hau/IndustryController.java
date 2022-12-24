@@ -22,31 +22,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/industries")
 @AllArgsConstructor
 @Api(value = "API ngành nghề")
-public class IndustryController extends APIController<IndustryDTO, SearchIndustryRequest> {
+public class IndustryController {
     private final IndustryService industryService;
 
-    @Override
+    @PostMapping
     public ResponseEntity<APIResponse<IndustryDTO>> save(@RequestBody IndustryDTO industryDTO) throws JsonProcessingException {
         return ResponseEntity.ok(APIResponse.success(industryService.save(industryDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<IndustryDTO>> edit(Long id, @RequestBody IndustryDTO industryDTO) {
+    @PutMapping("/{id}")
+    public ResponseEntity<APIResponse<IndustryDTO>> edit(@PathVariable Long id, @RequestBody IndustryDTO industryDTO) {
         return ResponseEntity.ok(APIResponse.success(industryService.edit(id, industryDTO)));
     }
 
-    @Override
-    public ResponseEntity<APIResponse<Void>> delete(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<Void>> delete(@PathVariable Long id) {
         industryService.delete(id);
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @Override
-    public ResponseEntity<APIResponse<IndustryDTO>> findById(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<IndustryDTO>> findById(@PathVariable Long id) {
         return ResponseEntity.ok(APIResponse.success(industryService.findById(id)));
     }
 
-    @Override
+    @GetMapping
     public ResponseEntity<APIResponse<PageDataResponse<IndustryDTO>>> getAll(SearchIndustryRequest request) {
         return ResponseEntity.ok(APIResponse.success(industryService.getAll(request)));
     }

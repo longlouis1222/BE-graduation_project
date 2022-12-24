@@ -62,7 +62,7 @@ public class PostServiceImpl implements PostService {
         Post post = postOptional.get();
         BeanUtil.copyNonNullProperties(postDTO, post);
 
-        return postMapper.to(post);
+        return postMapper.to(postReps.save(post));
     }
 
     @Override

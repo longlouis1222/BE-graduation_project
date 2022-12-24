@@ -42,7 +42,7 @@ public class IndustryServiceImpl implements IndustryService {
         Industries industries = industriesOptional.get();
         BeanUtil.copyNonNullProperties(industryDTO, industries);
 
-        return industryMapper.to(industries);
+        return industryMapper.to(industryReps.save(industries));
     }
 
     @Override
