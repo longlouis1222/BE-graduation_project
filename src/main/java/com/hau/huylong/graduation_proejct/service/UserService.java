@@ -17,4 +17,5 @@ public interface UserService {
     void deleteUser(List<Integer> userIds);
     List<UserDTO> findById(List<Integer> userIds);
     void uploadAvatar(MultipartFile file, String filePath, boolean isPublic);
+    void inActive(Integer userId, boolean check);
 }

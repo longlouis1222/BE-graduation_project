@@ -41,6 +41,12 @@ public class UserController  {
         return ResponseEntity.ok(APIResponse.success(userService.findById(ids).get(0)));
     }
 
+    @GetMapping("/inactive")
+    public ResponseEntity<APIResponse<Void>> inActiveAcc(@RequestParam Integer userId, @RequestParam boolean check) {
+        userService.inActive(userId, check);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
     @PostMapping
     public ResponseEntity<APIResponse<Void>> uploadAvatar(@RequestParam("fileUpload") MultipartFile fileUpload,
                                                           @RequestParam("filePath") String pathFile,

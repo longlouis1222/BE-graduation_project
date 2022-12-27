@@ -242,4 +242,21 @@ public class UserServiceImpl implements UserService {
             userInfoReps.save(userInfo);
         }
     }
+
+    @Override
+    public void inActive(Integer userId, boolean check) {
+        Optional<User> userOptional = userReps.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng với id  " + userOptional);
+        }
+
+        if (check) {
+            userOptional.get().setStatus(User.Status.ACTIVE);
+        } else {
+            userOptional.get().setStatus(User.Status.LOCK);
+        }
+
+        userReps.save(userOptional.get());
+    }
 }

@@ -1,9 +1,11 @@
 package com.hau.huylong.graduation_proejct.service.impl;
 
+import com.hau.huylong.graduation_proejct.common.enums.TypeUser;
 import com.hau.huylong.graduation_proejct.common.exception.APIException;
 import com.hau.huylong.graduation_proejct.common.util.BeanUtil;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
 import com.hau.huylong.graduation_proejct.entity.auth.CustomUser;
+import com.hau.huylong.graduation_proejct.entity.auth.User;
 import com.hau.huylong.graduation_proejct.entity.hau.Company;
 import com.hau.huylong.graduation_proejct.entity.hau.Post;
 import com.hau.huylong.graduation_proejct.model.dto.hau.CompanyDTO;
@@ -11,6 +13,7 @@ import com.hau.huylong.graduation_proejct.model.dto.hau.IndustryDTO;
 import com.hau.huylong.graduation_proejct.model.dto.hau.PostDTO;
 import com.hau.huylong.graduation_proejct.model.request.SearchPostRequest;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
+import com.hau.huylong.graduation_proejct.repository.auth.UserReps;
 import com.hau.huylong.graduation_proejct.repository.hau.CompanyReps;
 import com.hau.huylong.graduation_proejct.repository.hau.IndustryReps;
 import com.hau.huylong.graduation_proejct.repository.hau.PostReps;
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Slf4j
 public class PostServiceImpl implements PostService {
+    private final UserReps userReps;
     private final PostReps postReps;
     private final PostMapper postMapper;
     private final CompanyReps companyReps;
@@ -45,9 +49,19 @@ public class PostServiceImpl implements PostService {
     public PostDTO save(PostDTO postDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUser user = (CustomUser) authentication.getPrincipal();
-        Company company = companyReps.findByUserId(user.getId())
-                .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy công ty"));
-        postDTO.setCompanyId(company.getId());
+
+        Optional<User> userOptional = userReps.findById(user.getId());
+
+        if (userOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng với id  " + userOptional);
+        }
+
+        if (userOptional.get().getType().name().equalsIgnoreCase(TypeUser.EMPLOYER.name())) {
+            Company company = companyReps.findByUserId(user.getId())
+                    .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy công ty"));
+            postDTO.setCompanyId(company.getId());
+        }
+
         return postMapper.to(postReps.save(postMapper.from(postDTO)));
     }
 
