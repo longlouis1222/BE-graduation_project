@@ -22,7 +22,6 @@ import com.hau.huylong.graduation_proejct.service.UserService;
 import com.hau.huylong.graduation_proejct.service.mapper.CompanyMapper;
 import com.hau.huylong.graduation_proejct.service.mapper.UserInfoMapper;
 import com.hau.huylong.graduation_proejct.service.mapper.UserMapper;
-import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -56,7 +55,7 @@ public class UserServiceImpl implements UserService {
      * @Param: username
      * @Param: status
      * @Return: User
-     * */
+     */
     @Override
     @Cacheable("users")
     public Optional<User> findByUsernameAndStatus(String username, short status) {
@@ -69,8 +68,7 @@ public class UserServiceImpl implements UserService {
      *
      * @Param: request
      * @Return: PageDataResponse<UserDTO>
-     *
-     * */
+     */
     @Override
     public PageDataResponse<UserDTO> getAll(UserRequest request) {
         Pageable pageable = PageableUtils.of(request.getPage(), request.getSize());
@@ -95,7 +93,7 @@ public class UserServiceImpl implements UserService {
      * @Param: userId
      * @RequestBody: UserDTO
      * @Return: UserDTO
-     * */
+     */
     @Override
     public UserDTO edit(Integer userId, UserRequest userRequest) {
         Optional<User> userOptional = userReps.findById(userId);
@@ -107,7 +105,6 @@ public class UserServiceImpl implements UserService {
         // update account and roles to user
         User user = userOptional.get();
         user.setEmail(userRequest.getEmail());
-        user.setStatus(userRequest.getStatus());
         user.setUsername(userRequest.getUsername());
 
         if (userRequest.getListRole() != null) {
@@ -116,17 +113,22 @@ public class UserServiceImpl implements UserService {
             user.setRoles(roleSet);
         }
 
-        // update user info or company info
+        //update user info or company info
         UserInfo userInfo = userInfoReps.findByUserId(user.getId())
                 .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("User not found."));
-        Company company = companyReps.findByUserId(user.getId())
-                .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("Company not found."));
-        UserInfo userContactInfo = userInfoReps.findByCompanyId(company.getId())
-                .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("User not found."));
+
+        CompanyDTO companyDto = null;
+        UserInfoDTO userInfoDTO = null;
 
         if (userRequest.getType() != null) {
             if (userRequest.getType().equalsIgnoreCase("employer")) {
+                Company company = companyReps.findByUserId(user.getId())
+                        .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("Company not found."));
+                UserInfo userContactInfo = userInfoReps.findByCompanyId(company.getId())
+                        .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("User not found."));
+
                 // set person contact info
+
                 userContactInfo.setFullName(userRequest.getUserInfoRequest().getFullName());
                 userContactInfo.setPhoneNumber(userRequest.getUserInfoRequest().getPhoneNumber());
                 userContactInfo.setAddress(userRequest.getUserInfoRequest().getAddress());
@@ -139,6 +141,9 @@ public class UserServiceImpl implements UserService {
                 company.setEmployeeNumber(userRequest.getCompanyRequest().getEmployeeNumber());
                 company.setFieldOfActivity(userRequest.getCompanyRequest().getFieldOfActivity());
                 user.setType(TypeUser.EMPLOYER);
+
+                userInfoDTO = userInfoMapper.to(userInfoReps.save(userContactInfo));
+                companyDto = companyMapper.to(companyReps.save(company));
             } else {
                 userInfo.setGender(userRequest.getUserInfoRequest().getGender());
                 userInfo.setAddress(userRequest.getUserInfoRequest().getAddress());
@@ -149,20 +154,12 @@ public class UserServiceImpl implements UserService {
                 userInfo.setMarriageStatus(userRequest.getUserInfoRequest().getMarriageStatus());
                 userInfo.setPhoneNumber(userRequest.getUserInfoRequest().getPhoneNumber());
                 user.setType(TypeUser.CANDIDATE);
+
+                userInfoDTO = userInfoMapper.to(userInfoReps.save(userInfo));
             }
         }
 
         UserDTO userDTO = userMapper.to(userReps.save(user));
-
-        CompanyDTO companyDto = null;
-        UserInfoDTO userInfoDTO = null;
-        if (userRequest.getType().equalsIgnoreCase("employer")) {
-            userInfoDTO = userInfoMapper.to(userInfoReps.save(userContactInfo));
-            companyDto = companyMapper.to(companyReps.save(company));
-        } else {
-            userInfoDTO = userInfoMapper.to(userInfoReps.save(userInfo));
-        }
-
 
         if (userInfoDTO != null && Objects.equals(userInfoDTO.getUserId(), userDTO.getId())) {
             userDTO.setUserInfoDTO(userInfoDTO);
@@ -175,6 +172,7 @@ public class UserServiceImpl implements UserService {
 
         return userDTO;
     }
+
 
     @Override
     public void addRoleToUser(List<Integer> roleIds, List<Integer> userIds) {
