@@ -104,7 +104,6 @@ public class UserServiceImpl implements UserService {
 
         // update account and roles to user
         User user = userOptional.get();
-        user.setEmail(userRequest.getEmail());
         user.setUsername(userRequest.getUsername());
 
         if (userRequest.getListRole() != null) {
@@ -128,18 +127,19 @@ public class UserServiceImpl implements UserService {
                         .orElseThrow(() -> APIException.from(HttpStatus.NOT_FOUND).withMessage("User not found."));
 
                 // set person contact info
-
                 userContactInfo.setFullName(userRequest.getUserInfoRequest().getFullName());
                 userContactInfo.setPhoneNumber(userRequest.getUserInfoRequest().getPhoneNumber());
                 userContactInfo.setAddress(userRequest.getUserInfoRequest().getAddress());
 
                 // set company info
-                company.setAddress(userRequest.getCompanyRequest().getAddress());
+                company.setCompanyAddress(userRequest.getCompanyRequest().getCompanyAddress());
                 company.setName(userRequest.getCompanyRequest().getName());
-                company.setPhoneNumber(userRequest.getCompanyRequest().getPhoneNumber());
+                company.setCompanyPhoneNumber(userRequest.getCompanyRequest().getCompanyAddress());
                 company.setTaxCode(userRequest.getCompanyRequest().getTaxCode());
                 company.setEmployeeNumber(userRequest.getCompanyRequest().getEmployeeNumber());
                 company.setFieldOfActivity(userRequest.getCompanyRequest().getFieldOfActivity());
+                company.setLocation(userRequest.getCompanyRequest().getLocation());
+                company.setEmailCompany(userRequest.getCompanyRequest().getEmailCompany());
                 user.setType(TypeUser.EMPLOYER);
 
                 userInfoDTO = userInfoMapper.to(userInfoReps.save(userContactInfo));

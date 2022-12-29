@@ -6,8 +6,10 @@ import lombok.Data;
 public class SearchCompanyRequest extends SearchRequest{
     private String taxCode;
     private String name;
+    private String emailCompany;
     private String employeeNumber;
-    private String address;
-    private String phoneNumber;
+    private String companyAddress;
+    private String location;
+    private String companyPhoneNumber;
     private String fieldOfActivity;
 }

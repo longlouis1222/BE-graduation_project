@@ -21,9 +21,13 @@ public class Company extends BaseEntity {
     @Column(name = "employee_number")
     private String employeeNumber;
     @Column(name = "address")
-    private String address;
+    private String companyAddress;
+    @Column(name = "location")
+    private String location;
+    @Column(name = "email_company")
+    private String emailCompany;
     @Column(name = "phone_number")
-    private String phoneNumber;
+    private String companyPhoneNumber;
     @Column(name = "field_of_activity")
     private String fieldOfActivity;
     @Column(name = "user_id")

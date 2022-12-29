@@ -14,8 +14,9 @@ public class CompanyDTO {
     private String taxCode;
     private String name;
     private String employeeNumber;
-    private String address;
-    private String phoneNumber;
+    private String companyAddress;
+    private String companyPhoneNumber;
+    private String location;
     private String fieldOfActivity;
     private Integer userId;
 }
