@@ -77,9 +77,18 @@ public class UserServiceImpl implements UserService {
         Page<UserDTO> pageData = userReps.search(request, pageable).map(userMapper::to);
 
         if (!pageData.isEmpty()) {
+            List<Integer> userIds = pageData.map(UserDTO::getId).toList();
+
+            Map<Integer, CompanyDTO> mapCompanyDTO = companyReps.findByUserIdIn(userIds)
+                    .stream().map(companyMapper::to).collect(Collectors.toMap(CompanyDTO::getUserId, c -> c));
+
             pageData.forEach(p -> {
-                if (mapUserInfo.containsKey(p.getId())) {
+                if (!mapUserInfo.isEmpty() && mapUserInfo.containsKey(p.getId())) {
                     p.setUserInfoDTO(mapUserInfo.get(p.getId()));
+                }
+
+                if (!mapCompanyDTO.isEmpty() && mapCompanyDTO.containsKey(p.getId())) {
+                    p.setCompanyDTO(mapCompanyDTO.get(p.getId()));
                 }
             });
         }
@@ -208,11 +217,17 @@ public class UserServiceImpl implements UserService {
                     .stream().map(userMapper::to).collect(Collectors.toList());
             Map<Integer, UserInfoDTO> userInfos = userInfoReps.findByUserIdIn(userIds)
                     .stream().map(userInfoMapper::to).collect(Collectors.toMap(UserInfoDTO::getUserId, u -> u));
+            Map<Integer, CompanyDTO> mapCompanyDTO = companyReps.findByUserIdIn(userIds)
+                    .stream().map(companyMapper::to).collect(Collectors.toMap(CompanyDTO::getUserId, c -> c));
 
             if (!users.isEmpty()) {
                 users.forEach(u -> {
                     if (!userInfos.isEmpty() && userInfos.containsKey(u.getId())) {
                         u.setUserInfoDTO(userInfos.get(u.getId()));
+                    }
+
+                    if (!mapCompanyDTO.isEmpty() && mapCompanyDTO.containsKey(u.getId())) {
+                        u.setCompanyDTO(mapCompanyDTO.get(u.getId()));
                     }
                 });
             }
