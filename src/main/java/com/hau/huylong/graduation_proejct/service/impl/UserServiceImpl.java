@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
                 // set company info
                 company.setCompanyAddress(userRequest.getCompanyRequest().getCompanyAddress());
                 company.setName(userRequest.getCompanyRequest().getName());
-                company.setCompanyPhoneNumber(userRequest.getCompanyRequest().getCompanyAddress());
+                company.setCompanyPhoneNumber(userRequest.getCompanyRequest().getCompanyPhoneNumber());
                 company.setTaxCode(userRequest.getCompanyRequest().getTaxCode());
                 company.setEmployeeNumber(userRequest.getCompanyRequest().getEmployeeNumber());
                 company.setFieldOfActivity(userRequest.getCompanyRequest().getFieldOfActivity());
