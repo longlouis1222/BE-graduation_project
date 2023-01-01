@@ -23,6 +23,7 @@ public interface PostReps extends JpaRepository<Post, Long> {
             " AND (:#{#request.jobDescription} IS NULL OR i.jobDescription LIKE %:#{#request.jobDescription}%) " +
             " AND (:#{#request.jobRequirements} IS NULL OR i.jobRequirements LIKE %:#{#request.jobRequirements}%) " +
             " AND (:#{#request.benefits} IS NULL OR i.benefits LIKE %:#{#request.benefits}%) " +
+            " AND (:#{#request.status} IS NULL OR i.status LIKE %:#{#request.status}%) " +
             " ORDER BY i.id desc ")
     Page<Post> search(SearchPostRequest request, Pageable pageable);
 

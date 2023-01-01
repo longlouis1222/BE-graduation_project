@@ -28,6 +28,7 @@ public class PostDTO {
     private String jobDescription;
     private String jobRequirements;
     private String benefits;
+    private String status;
     private Long companyId;
     private CompanyDTO companyDTO;
     private IndustryDTO industryDTO;

@@ -22,4 +22,5 @@ public class SearchPostRequest extends SearchRequest {
     private String jobDescription;
     private String jobRequirements;
     private String benefits;
+    private String status;
 }

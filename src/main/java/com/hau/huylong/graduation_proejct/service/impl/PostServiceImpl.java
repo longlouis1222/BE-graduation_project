@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hau.huylong.graduation_proejct.common.constant.Constants.Post.Status.*;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -62,6 +64,8 @@ public class PostServiceImpl implements PostService {
             postDTO.setCompanyId(company.getId());
         }
 
+        postDTO.setStatus(WAITING_APPROVE.name());
+
         return postMapper.to(postReps.save(postMapper.from(postDTO)));
     }
 
@@ -71,6 +75,14 @@ public class PostServiceImpl implements PostService {
 
         if (postOptional.isEmpty()) {
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy bài viết");
+        }
+
+        if (postDTO.getStatus().equalsIgnoreCase(WAITING_APPROVE.name())) {
+            postDTO.setStatus(WAITING_APPROVE.name());
+        } else if (postDTO.getStatus().equalsIgnoreCase(APPROVED.name())) {
+            postDTO.setStatus(APPROVED.name());
+        } else {
+            postDTO.setStatus(REJECT.name());
         }
 
         Post post = postOptional.get();

@@ -68,4 +68,7 @@ public class Post extends BaseEntity {
 
     @Column(name = "benefits")
     private String benefits;
+
+    @Column(name = "status")
+    private String status;
 }

@@ -29,6 +29,13 @@ public class Constants {
         }
     }
 
+
+    public static class Post {
+        public enum Status {
+            APPROVED, WAITING_APPROVE, REJECT
+        }
+    }
+
     public static final List<String> EXTENTIONS = List.of("doc", "docx", "xls",
             "pdf", "png", "jpg", "jpeg", "pptx", "ppt", "xlsm", "xlsx");
 
