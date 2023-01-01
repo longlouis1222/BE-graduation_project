@@ -2,6 +2,7 @@ package com.hau.huylong.graduation_proejct.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hau.huylong.graduation_proejct.common.exception.APIException;
 import com.hau.huylong.graduation_proejct.common.util.BeanUtil;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
@@ -60,6 +61,7 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
 
     private RecruitmentProfileDTO getRecruitmentProfileDTO(RecruitmentProfileDTO recruitmentProfileDTO,
                                                            ObjectMapper mapper, RecruitmentProfile recruitmentProfile) {
+        mapper.registerModule(new JavaTimeModule());
         try {
             if (recruitmentProfileDTO.getAcademyInfoDTO() != null) {
                 recruitmentProfile.setAcademyInfo(mapper.writeValueAsString(recruitmentProfileDTO.getAcademyInfoDTO()));
@@ -124,6 +126,7 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     }
 
     private void setDTOProfile(ObjectMapper objectMapper, RecruitmentProfileDTO p) {
+        objectMapper.registerModule(new JavaTimeModule());
         try {
             AcademyInfoDTO academyInfoDTO = objectMapper
                     .readValue(p.getAcademyInfo(), AcademyInfoDTO.class);

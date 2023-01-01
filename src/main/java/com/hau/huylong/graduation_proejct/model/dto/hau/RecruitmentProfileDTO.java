@@ -2,8 +2,6 @@ package com.hau.huylong.graduation_proejct.model.dto.hau;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Lob;
 import java.util.Date;
 
 @Data
