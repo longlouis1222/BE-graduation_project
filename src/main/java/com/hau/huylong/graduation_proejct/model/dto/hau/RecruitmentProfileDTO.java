@@ -37,6 +37,7 @@ public class RecruitmentProfileDTO {
     private String careerTarget;
     // kỹ năng mềm
     private String sortSkill;
+    private boolean permissionSearch;
 
     // Kinh nghiệm làm việc
     private String workExperience;
@@ -46,6 +47,7 @@ public class RecruitmentProfileDTO {
     private String foreignLanguage;
     // Tin học
     private String officeInfo;
+    private String fileId;
 
     // Kinh nghiệm làm việc
     private WorkExperienceDTO workExperienceDTO;

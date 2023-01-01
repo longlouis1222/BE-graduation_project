@@ -12,6 +12,8 @@ import javax.persistence.Table;
 @Table(name = "recruitment_profile")
 @Data
 public class RecruitmentProfile extends BaseEntity {
+    @Column(name = "file_id")
+    private String fileId;
     @Column(name = "position_offer")
     private String positionOffer;
     //cấp bậc mong muốn
@@ -65,4 +67,7 @@ public class RecruitmentProfile extends BaseEntity {
     @Column(name = "office_info")
     @Lob
     private String officeInfo;
+
+    @Column(name = "permission_search")
+    private boolean permissionSearch;
 }

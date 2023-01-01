@@ -9,14 +9,17 @@ import com.hau.huylong.graduation_proejct.service.GoogleDriverFile;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -72,11 +75,13 @@ public class GoogleDriverFileServiceImpl implements GoogleDriverFile {
     }
 
     @Override
-    public void downloadFile(String id, OutputStream outputStream, HttpServletResponse response) throws IOException, GeneralSecurityException {
+    public String downloadFile(String id, OutputStream outputStream, HttpServletResponse response) throws IOException, GeneralSecurityException {
         File file = googleFileManager.getFileById(id);
-        response.setContentType(file.getMimeType());
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
         googleFileManager.downloadFile(id, outputStream);
+        outputStream = new ByteArrayOutputStream();
+        return Base64.getEncoder().encodeToString(((ByteArrayOutputStream) outputStream).toByteArray());
     }
 
 }

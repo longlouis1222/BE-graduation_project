@@ -65,10 +65,9 @@ public class GoogleDriverController {
 
     // Download file
     @GetMapping("/download/file/{id}")
-    public ResponseEntity<APIResponse<Void>> downloadFile(@PathVariable String id, HttpServletResponse response)
+    public ResponseEntity<APIResponse<String>> downloadFile(@PathVariable String id, HttpServletResponse response)
             throws IOException, GeneralSecurityException {
-        googleDriveFileService.downloadFile(id, response.getOutputStream(), response);
-        return ResponseEntity.ok(APIResponse.success());
+        return ResponseEntity.ok(APIResponse.success(googleDriveFileService.downloadFile(id, response.getOutputStream(), response)));
     }
 
     // Create folder

@@ -8,10 +8,12 @@ import com.hau.huylong.graduation_proejct.common.util.BeanUtil;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
 import com.hau.huylong.graduation_proejct.entity.auth.CustomUser;
 import com.hau.huylong.graduation_proejct.entity.hau.RecruitmentProfile;
+import com.hau.huylong.graduation_proejct.entity.hau.UserInfo;
 import com.hau.huylong.graduation_proejct.model.dto.hau.*;
 import com.hau.huylong.graduation_proejct.model.request.SearchRecruitmentProfileRequest;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
 import com.hau.huylong.graduation_proejct.repository.hau.RecruitmentProfileReps;
+import com.hau.huylong.graduation_proejct.service.GoogleDriverFile;
 import com.hau.huylong.graduation_proejct.service.RecruitmentProfileService;
 import com.hau.huylong.graduation_proejct.service.mapper.RecruitmentProfileMapper;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -31,6 +34,7 @@ import java.util.Optional;
 public class RecruitmentProfileServiceImpl implements RecruitmentProfileService {
     private final RecruitmentProfileMapper recruitmentProfileMapper;
     private final RecruitmentProfileReps recruitmentProfileReps;
+    private final GoogleDriverFile googleDriverFile;
 
     @Override
     public RecruitmentProfileDTO save(RecruitmentProfileDTO recruitmentProfileDTO) {
@@ -143,6 +147,65 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
             p.setOfficeInfoDTO(officeInfoDTO);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RecruitmentProfileDTO findByUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findByUserId(customUser.getId().longValue());
+
+        if (recruitmentProfileOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        }
+
+        RecruitmentProfileDTO recruitmentProfileDTO = recruitmentProfileMapper.to(recruitmentProfileOptional.get());
+
+        setDTOProfile(objectMapper, recruitmentProfileDTO);
+
+        return recruitmentProfileDTO;
+    }
+
+    @Override
+    public void activeSearch(boolean check) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
+        Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findByUserId(customUser.getId().longValue());
+
+        if (recruitmentProfileOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        }
+
+        if (check) {
+            recruitmentProfileOptional.get().setPermissionSearch(true);
+        } else {
+            recruitmentProfileOptional.get().setPermissionSearch(false);
+        }
+
+        recruitmentProfileReps.save(recruitmentProfileOptional.get());
+    }
+
+    @Override
+    public void uploadProfile(MultipartFile file, String filePath, boolean isPublic) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
+        String fileId = googleDriverFile.uploadFile(file, filePath, isPublic);
+        if (fileId != null) {
+            Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findByUserId(customUser.getId().longValue());
+
+            if (recruitmentProfileOptional.isEmpty()) {
+                throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+            }
+
+            RecruitmentProfile recruitmentProfile = recruitmentProfileOptional.get();
+            recruitmentProfile.setFileId(fileId);
+
+            recruitmentProfileReps.save(recruitmentProfile);
         }
     }
 }

@@ -1,8 +1,6 @@
 package com.hau.huylong.graduation_proejct.repository.hau;
 
-import com.hau.huylong.graduation_proejct.entity.hau.Post;
 import com.hau.huylong.graduation_proejct.entity.hau.RecruitmentProfile;
-import com.hau.huylong.graduation_proejct.model.request.SearchPostRequest;
 import com.hau.huylong.graduation_proejct.model.request.SearchRecruitmentProfileRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface RecruitmentProfileReps extends JpaRepository<RecruitmentProfile, Long> {
     @Query("select i from RecruitmentProfile i " +
             " WHERE (:#{#request.userId} IS NULL OR i.userId = :#{#request.userId}) " +
             " AND (:#{#request.positionOffer} IS NULL OR i.positionOffer LIKE %:#{#request.positionOffer}%) " +
+            " AND i.permissionSearch IS TRUE " +
             " AND (:#{#request.levelDesire} IS NULL OR i.levelDesire LIKE %:#{#request.levelDesire}%) " +
             " AND (:#{#request.academyLevel} IS NULL OR i.academyLevel LIKE %:#{#request.academyLevel}%) " +
             " AND (:#{#request.career} IS NULL OR i.career LIKE %:#{#request.career}%) " +
@@ -27,4 +28,6 @@ public interface RecruitmentProfileReps extends JpaRepository<RecruitmentProfile
             " AND (:#{#request.experienceNumber} IS NULL OR i.experienceNumber = :#{#request.experienceNumber}) " +
             " ORDER BY i.id desc ")
     Page<RecruitmentProfile> search(SearchRecruitmentProfileRequest request, Pageable pageable);
+
+    Optional<RecruitmentProfile> findByUserId(Long userId);
 }
