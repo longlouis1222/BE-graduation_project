@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hau.huylong.graduation_proejct.common.exception.APIException;
 import com.hau.huylong.graduation_proejct.common.util.BeanUtil;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
+import com.hau.huylong.graduation_proejct.entity.auth.CustomUser;
 import com.hau.huylong.graduation_proejct.entity.hau.RecruitmentProfile;
-import com.hau.huylong.graduation_proejct.model.dto.hau.PostDTO;
-import com.hau.huylong.graduation_proejct.model.dto.hau.RecruitmentProfileDTO;
+import com.hau.huylong.graduation_proejct.model.dto.hau.*;
 import com.hau.huylong.graduation_proejct.model.request.SearchRecruitmentProfileRequest;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
 import com.hau.huylong.graduation_proejct.repository.hau.RecruitmentProfileReps;
@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -30,31 +32,20 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     private final RecruitmentProfileReps recruitmentProfileReps;
 
     @Override
-    public RecruitmentProfileDTO save(RecruitmentProfileDTO recruitmentProfileDTO) throws JsonProcessingException {
+    public RecruitmentProfileDTO save(RecruitmentProfileDTO recruitmentProfileDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
         ObjectMapper mapper = new ObjectMapper();
+        recruitmentProfileDTO.setUserId(customUser.getId().longValue());
         RecruitmentProfile recruitmentProfile = recruitmentProfileMapper.from(recruitmentProfileDTO);
 
-        if (recruitmentProfileDTO.getAcademyInfoDTO() != null) {
-            recruitmentProfile.setAcademyInfo(mapper.writeValueAsString(recruitmentProfileDTO.getAcademyInfoDTO()));
-        }
-
-        if (recruitmentProfileDTO.getWorkExperienceDTO() != null) {
-            recruitmentProfile.setWorkExperience(mapper.writeValueAsString(recruitmentProfileDTO.getWorkExperienceDTO()));
-        }
-
-        if (recruitmentProfileDTO.getForeignLanguageDTO() != null) {
-            recruitmentProfile.setForeignLanguage(mapper.writeValueAsString(recruitmentProfileDTO.getForeignLanguageDTO()));
-        }
-
-        if (recruitmentProfileDTO.getOfficeInfoDTO() != null) {
-            recruitmentProfile.setOfficeInfo(mapper.writeValueAsString(recruitmentProfileDTO.getOfficeInfoDTO()));
-        }
-
-        return recruitmentProfileMapper.to(recruitmentProfileReps.save(recruitmentProfile));
+        return getRecruitmentProfileDTO(recruitmentProfileDTO, mapper, recruitmentProfile);
     }
 
     @Override
     public RecruitmentProfileDTO edit(Long id, RecruitmentProfileDTO recruitmentProfileDTO) {
+        ObjectMapper mapper = new ObjectMapper();
         Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findById(id);
 
         if (recruitmentProfileOptional.isEmpty()) {
@@ -63,6 +54,31 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
 
         RecruitmentProfile recruitmentProfile = recruitmentProfileOptional.get();
         BeanUtil.copyNonNullProperties(recruitmentProfileDTO, recruitmentProfile);
+
+        return getRecruitmentProfileDTO(recruitmentProfileDTO, mapper, recruitmentProfile);
+    }
+
+    private RecruitmentProfileDTO getRecruitmentProfileDTO(RecruitmentProfileDTO recruitmentProfileDTO,
+                                                           ObjectMapper mapper, RecruitmentProfile recruitmentProfile) {
+        try {
+            if (recruitmentProfileDTO.getAcademyInfoDTO() != null) {
+                recruitmentProfile.setAcademyInfo(mapper.writeValueAsString(recruitmentProfileDTO.getAcademyInfoDTO()));
+            }
+
+            if (recruitmentProfileDTO.getWorkExperienceDTO() != null) {
+                recruitmentProfile.setWorkExperience(mapper.writeValueAsString(recruitmentProfileDTO.getWorkExperienceDTO()));
+            }
+
+            if (recruitmentProfileDTO.getForeignLanguageDTO() != null) {
+                recruitmentProfile.setForeignLanguage(mapper.writeValueAsString(recruitmentProfileDTO.getForeignLanguageDTO()));
+            }
+
+            if (recruitmentProfileDTO.getOfficeInfoDTO() != null) {
+                recruitmentProfile.setOfficeInfo(mapper.writeValueAsString(recruitmentProfileDTO.getOfficeInfoDTO()));
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         return recruitmentProfileMapper.to(recruitmentProfileReps.save(recruitmentProfile));
     }
@@ -80,19 +96,50 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
 
     @Override
     public RecruitmentProfileDTO findById(Long id) {
+        ObjectMapper objectMapper = new ObjectMapper();
         Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findById(id);
 
         if (recruitmentProfileOptional.isEmpty()) {
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
         }
 
-        return recruitmentProfileMapper.to(recruitmentProfileOptional.get());
+        RecruitmentProfileDTO recruitmentProfileDTO = recruitmentProfileMapper.to(recruitmentProfileOptional.get());
+
+        setDTOProfile(objectMapper, recruitmentProfileDTO);
+
+        return recruitmentProfileDTO;
     }
 
     @Override
     public PageDataResponse<RecruitmentProfileDTO> getAll(SearchRecruitmentProfileRequest request) {
+        ObjectMapper objectMapper = new ObjectMapper();
         Pageable pageable = PageableUtils.of(request.getPage(), request.getSize());
         Page<RecruitmentProfileDTO> page = recruitmentProfileReps.search(request, pageable).map(recruitmentProfileMapper::to);
+
+        if (!page.isEmpty()) {
+            page.forEach(p -> setDTOProfile(objectMapper, p));
+        }
+
         return PageDataResponse.of(page);
+    }
+
+    private void setDTOProfile(ObjectMapper objectMapper, RecruitmentProfileDTO p) {
+        try {
+            AcademyInfoDTO academyInfoDTO = objectMapper
+                    .readValue(p.getAcademyInfo(), AcademyInfoDTO.class);
+            WorkExperienceDTO workExperienceDTO = objectMapper
+                    .readValue(p.getWorkExperience(), WorkExperienceDTO.class);
+            ForeignLanguageDTO foreignLanguageDTO = objectMapper
+                    .readValue(p.getForeignLanguage(), ForeignLanguageDTO.class);
+            OfficeInfoDTO officeInfoDTO = objectMapper
+                    .readValue(p.getOfficeInfo(), OfficeInfoDTO.class);
+
+            p.setAcademyInfoDTO(academyInfoDTO);
+            p.setForeignLanguageDTO(foreignLanguageDTO);
+            p.setWorkExperienceDTO(workExperienceDTO);
+            p.setOfficeInfoDTO(officeInfoDTO);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

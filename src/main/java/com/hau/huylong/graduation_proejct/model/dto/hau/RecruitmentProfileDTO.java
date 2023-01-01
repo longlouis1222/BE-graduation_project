@@ -2,6 +2,8 @@ package com.hau.huylong.graduation_proejct.model.dto.hau;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Lob;
 import java.util.Date;
 
 @Data
@@ -37,6 +39,16 @@ public class RecruitmentProfileDTO {
     private String careerTarget;
     // kỹ năng mềm
     private String sortSkill;
+
+    // Kinh nghiệm làm việc
+    private String workExperience;
+    // Thông tin học vấn
+    private String academyInfo;
+    // Ngoại ngữ
+    private String foreignLanguage;
+    // Tin học
+    private String officeInfo;
+
     // Kinh nghiệm làm việc
     private WorkExperienceDTO workExperienceDTO;
     // Thông tin học vấn
