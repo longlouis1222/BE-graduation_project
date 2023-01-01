@@ -35,6 +35,8 @@ public class RecruitmentProfileDTO {
     private String address;
     // mục tiêu nghề nghiệp
     private String careerTarget;
+    // kỹ năng mềm
+    private String sortSkill;
     // Kinh nghiệm làm việc
     private WorkExperienceDTO workExperienceDTO;
     // Thông tin học vấn

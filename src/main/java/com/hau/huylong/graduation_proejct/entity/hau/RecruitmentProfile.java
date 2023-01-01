@@ -47,6 +47,8 @@ public class RecruitmentProfile extends BaseEntity {
     // mục tiêu nghề nghiệp
     @Column(name = "career_target")
     private String careerTarget;
+    @Column(name = "sort_skill")
+    private String sortSkill;
     // Kinh nghiệm làm việc
     @Column(name = "work_experience")
     @Lob
