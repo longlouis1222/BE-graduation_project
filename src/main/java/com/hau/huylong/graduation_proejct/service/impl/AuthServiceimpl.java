@@ -109,7 +109,7 @@ public class AuthServiceimpl implements AuthService {
         customUser.setAvatar(userInfo.getAvatar());
 
         String accessToken = tokenUtil.generateToken(customUser.getUsername(), roles,
-                customUser.getId(), customUser.getFullName(), customUser.getAvatar());
+                customUser.getId(), customUser.getFullName(), customUser.getAvatar(), customUser.getType());
 
         return refreshToken.findByRefreshToken(requestRefreshToken)
                 .map(refreshToken::verifyExpiration).map(u -> {

@@ -70,4 +70,7 @@ public class RecruitmentProfile extends BaseEntity {
 
     @Column(name = "permission_search")
     private boolean permissionSearch;
+
+    @Column(name = "view")
+    private Integer view;
 }

@@ -16,6 +16,7 @@ public class CustomUser extends User{
     private String fullName;
     private String avatar;
     private String path;
+    private String type;
     private Set<String> authorities;
 
     public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities) {
@@ -30,11 +31,20 @@ public class CustomUser extends User{
     public CustomUser(String username, String password, boolean enabled, boolean accountNonExpired,
                       boolean credentialsNonExpired, boolean accountNonLocked,
                       Collection<? extends GrantedAuthority> authorities, Integer id, String fullName,
-                      String avatar) {
+                      String avatar, String type) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.id = id;
         this.fullName = fullName;
         this.avatar = avatar;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Integer getId() { return id; }

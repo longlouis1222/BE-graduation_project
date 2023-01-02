@@ -57,4 +57,6 @@ public class RecruitmentProfileDTO {
     private ForeignLanguageDTO foreignLanguageDTO;
     // Tin học
     private OfficeInfoDTO officeInfoDTO;
+
+    private Integer view;
 }

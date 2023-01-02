@@ -50,4 +50,7 @@ public class UserInfo extends BaseEntity {
 
     @Column(name = "companyId")
     private Long companyId;
+
+    @Column(name = "arr_recruitment_id")
+    private String arrRecruitmentIds;
 }

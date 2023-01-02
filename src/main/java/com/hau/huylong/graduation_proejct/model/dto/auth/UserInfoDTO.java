@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Builder
@@ -19,4 +20,6 @@ public class UserInfoDTO {
     private String address;
     private Long companyId;
     private String phoneNumber;
+    private String arrRecruitmentIds;
+    private List<Long> arrProfileIds;
 }

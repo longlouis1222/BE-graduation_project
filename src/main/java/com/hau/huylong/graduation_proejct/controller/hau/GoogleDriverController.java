@@ -70,6 +70,12 @@ public class GoogleDriverController {
         return ResponseEntity.ok(APIResponse.success(googleDriveFileService.downloadFile(id, response.getOutputStream(), response)));
     }
 
+    @GetMapping("/file/get-by-id/{id}")
+    public ResponseEntity<APIResponse<GoogleDriverFileDTO>> getById(@PathVariable String id)
+            throws IOException, GeneralSecurityException {
+        return ResponseEntity.ok(APIResponse.success(googleDriveFileService.findByIdFiled(id)));
+    }
+
     // Create folder
     @PostMapping("/create/folder")
     public ResponseEntity<APIResponse<Void>> createFolder(@RequestBody FolderDriverDTO folderDTO) throws Exception {

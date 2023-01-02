@@ -12,6 +12,7 @@ import com.hau.huylong.graduation_proejct.entity.hau.UserInfo;
 import com.hau.huylong.graduation_proejct.model.dto.hau.*;
 import com.hau.huylong.graduation_proejct.model.request.SearchRecruitmentProfileRequest;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
+import com.hau.huylong.graduation_proejct.repository.auth.UserInfoReps;
 import com.hau.huylong.graduation_proejct.repository.hau.RecruitmentProfileReps;
 import com.hau.huylong.graduation_proejct.service.GoogleDriverFile;
 import com.hau.huylong.graduation_proejct.service.RecruitmentProfileService;
@@ -26,7 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -35,6 +38,7 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     private final RecruitmentProfileMapper recruitmentProfileMapper;
     private final RecruitmentProfileReps recruitmentProfileReps;
     private final GoogleDriverFile googleDriverFile;
+    private final UserInfoReps userInfoReps;
 
     @Override
     public RecruitmentProfileDTO save(RecruitmentProfileDTO recruitmentProfileDTO) {
@@ -207,5 +211,50 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
 
             recruitmentProfileReps.save(recruitmentProfile);
         }
+    }
+
+    @Override
+    public void saveListProfile(List<Long> ids) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
+        Optional<UserInfo> userOptional = userInfoReps.findByUserId(customUser.getId());
+
+        if (userOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng!");
+        }
+
+        if (ids != null && !ids.isEmpty()) {
+            try {
+                userOptional.get().setArrRecruitmentIds(objectMapper.writeValueAsString(ids));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        userInfoReps.save(userOptional.get());
+    }
+
+    @Override
+    public List<RecruitmentProfileDTO> getByListProfileId(List<Long> ids) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (ids != null && !ids.isEmpty()) {
+            List<RecruitmentProfile> recruitmentProfiles = recruitmentProfileReps.findByIdIn(ids);
+
+            if (recruitmentProfiles.isEmpty()) {
+                throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+            }
+
+            List<RecruitmentProfileDTO> recruitmentProfileDTOS = recruitmentProfiles.stream()
+                    .map(recruitmentProfileMapper::to).collect(Collectors.toList());
+
+            if (!recruitmentProfileDTOS.isEmpty()) {
+                recruitmentProfileDTOS.forEach(r -> setDTOProfile(objectMapper, r));
+            }
+
+            return recruitmentProfileDTOS;
+        }
+        return null;
     }
 }

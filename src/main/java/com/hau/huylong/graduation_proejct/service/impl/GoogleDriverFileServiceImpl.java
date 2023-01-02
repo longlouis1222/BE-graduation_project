@@ -30,7 +30,12 @@ public class GoogleDriverFileServiceImpl implements GoogleDriverFile {
 
     @Override
     public PageDataResponse<GoogleDriverFileDTO> getAllFile() throws IOException, GeneralSecurityException {
-        List<GoogleDriverFileDTO> responseList = null;
+        List<GoogleDriverFileDTO> responseList = getListFile();
+        return PageDataResponse.of(String.valueOf(responseList.size()), responseList);
+    }
+
+    private List<GoogleDriverFileDTO> getListFile() throws GeneralSecurityException, IOException {
+        List<GoogleDriverFileDTO> responseList = new ArrayList<>();
         List<File> files = googleFileManager.listEverything();
         GoogleDriverFileDTO dto = null;
 
@@ -50,7 +55,8 @@ public class GoogleDriverFileServiceImpl implements GoogleDriverFile {
                 }
             }
         }
-        return PageDataResponse.of(String.valueOf(responseList.size()), responseList);
+
+        return responseList;
     }
 
     @Override
@@ -83,5 +89,22 @@ public class GoogleDriverFileServiceImpl implements GoogleDriverFile {
         outputStream = new ByteArrayOutputStream();
         return Base64.getEncoder().encodeToString(((ByteArrayOutputStream) outputStream).toByteArray());
     }
+
+    @Override
+    public GoogleDriverFileDTO findByIdFiled(String fileId) throws GeneralSecurityException, IOException {
+        List<GoogleDriverFileDTO> responseList = getListFile();
+
+        GoogleDriverFileDTO googleDriverFileDTO = null;
+        if (!responseList.isEmpty()) {
+            for (GoogleDriverFileDTO r : responseList) {
+                if (r.getId().equals(fileId)) {
+                    googleDriverFileDTO = r;
+                }
+            }
+        }
+
+        return googleDriverFileDTO;
+    }
+
 
 }

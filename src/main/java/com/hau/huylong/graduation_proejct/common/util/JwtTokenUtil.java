@@ -51,7 +51,7 @@ public class JwtTokenUtil {
 
     // generate token for user
     public String generateToken(String username, Set<String> authorities,
-                                Integer uid, String fullname, String avatar) {
+                                Integer uid, String fullname, String avatar, String type) {
         Map<String, Object> claims = new HashMap<>();
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
@@ -59,6 +59,7 @@ public class JwtTokenUtil {
         claims.put("uid", uid);
         claims.put("fullname", fullname);
         claims.put("avatar", avatar);
+        claims.put("type", type);
         return doGenerateToken(claims, headers, username);
     }
 

@@ -91,11 +91,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         });
         user.setFullName(userInfo.getFullName());
         user.setAvatar(userInfo.getAvatar());
+        user.setType(userEntity.getType().name());
 
         Optional<RefreshTokenDTO> refreshToken = refreshTokenService.findByUserId(user.getId());
         JwtResponse tokenResponse = null;
         String token = tokenUtil.generateToken(user.getUsername(), authorities,
-                user.getId(), user.getFullName(), user.getAvatar());
+                user.getId(), user.getFullName(), user.getAvatar(), user.getType());
         if (refreshToken.isPresent()) {
             refreshToken.get().setAccessToken(token);
             RefreshTokenDTO tokenDTO = refreshTokenService.update(refreshToken.get());

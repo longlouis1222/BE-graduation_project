@@ -15,6 +15,18 @@ public class Post extends BaseEntity {
     @Column(name = "company_id")
     private Long companyId;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "recruitment_age")
+    private String recruitmentAge;
+
+    @Column(name = "workplace")
+    private String workplace;
+
+    @Column(name = "necessary_skills")
+    private String necessarySkills;
+
     @Column(name = "industry_id")
     private Long industryId;
 
@@ -34,7 +46,7 @@ public class Post extends BaseEntity {
 
     //thời hạn thử việc
     @Column(name = "probationary_period")
-    private Instant probationaryPeriod;
+    private String probationaryPeriod;
 
     //số lượng tuyển
     @Column(name = "number_of_recruits")
@@ -46,7 +58,7 @@ public class Post extends BaseEntity {
 
     // yêu cầu kinh nghiệm
     @Column(name = "recruitment_experience")
-    private String recruitmentExperience;
+    private Float recruitmentExperience;
 
     @Column(name = "salary_min")
     private Double salaryMin;

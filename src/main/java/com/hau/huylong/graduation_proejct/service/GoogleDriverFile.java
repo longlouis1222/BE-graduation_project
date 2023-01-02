@@ -15,4 +15,5 @@ public interface GoogleDriverFile {
     void deleteFile(String id) throws Exception;
     String uploadFile(MultipartFile file, String filePath, boolean isPublic);
     String downloadFile(String id, OutputStream outputStream, HttpServletResponse response) throws IOException, GeneralSecurityException;
+    GoogleDriverFileDTO findByIdFiled(String fileId) throws GeneralSecurityException, IOException;
 }

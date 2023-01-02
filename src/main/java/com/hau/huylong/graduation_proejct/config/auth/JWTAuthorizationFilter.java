@@ -84,6 +84,8 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
             Integer userId = claims.getBody().get("uid", Integer.class);
             String fullname = claims.getBody().get("fullname", String.class);
+            String avatar = claims.getBody().get("avatar", String.class);
+            String type = claims.getBody().get("type", String.class);
 
             UserDetails userDetails = new CustomUser(username,
                     "no-password",
@@ -94,7 +96,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                     grantedAuthorities,
                     userId,
                     fullname,
-                    null);
+                    avatar, type);
             return new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
 
         } catch (SignatureException e) {

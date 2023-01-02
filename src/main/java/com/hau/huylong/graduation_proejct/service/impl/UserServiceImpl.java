@@ -1,5 +1,7 @@
 package com.hau.huylong.graduation_proejct.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hau.huylong.graduation_proejct.common.enums.TypeUser;
 import com.hau.huylong.graduation_proejct.common.exception.APIException;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
@@ -71,9 +73,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public PageDataResponse<UserDTO> getAll(UserRequest request) {
+        ObjectMapper objectMapper = new ObjectMapper();
         Pageable pageable = PageableUtils.of(request.getPage(), request.getSize());
         Map<Integer, UserInfoDTO> mapUserInfo = userInfoReps.getListUserInfo()
-                .stream().map(userInfoMapper::to).collect(Collectors.toMap(UserInfoDTO::getUserId, ui -> ui));
+                .stream().map(u -> {
+                    UserInfoDTO userInfoDTO = userInfoMapper.to(u);
+                    if (userInfoDTO.getArrRecruitmentIds() != null) {
+                        try {
+                            userInfoDTO.setArrProfileIds(objectMapper.readValue(userInfoDTO.getArrRecruitmentIds(), List.class));
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return userInfoDTO;
+                }).collect(Collectors.toMap(UserInfoDTO::getUserId, ui -> ui));
         Page<UserDTO> pageData = userReps.search(request, pageable).map(userMapper::to);
 
         if (!pageData.isEmpty()) {
@@ -212,11 +225,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> findById(List<Integer> userIds) {
+        ObjectMapper objectMapper = new ObjectMapper();
         if (userIds != null && !userIds.isEmpty()) {
             List<UserDTO> users = userReps.findByIds(userIds)
                     .stream().map(userMapper::to).collect(Collectors.toList());
             Map<Integer, UserInfoDTO> userInfos = userInfoReps.findByUserIdIn(userIds)
-                    .stream().map(userInfoMapper::to).collect(Collectors.toMap(UserInfoDTO::getUserId, u -> u));
+                    .stream().map(u -> {
+                        UserInfoDTO userInfoDTO = userInfoMapper.to(u);
+                        if (userInfoDTO.getArrRecruitmentIds() != null) {
+                            try {
+                                userInfoDTO.setArrProfileIds(objectMapper.readValue(userInfoDTO.getArrRecruitmentIds(), List.class));
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        return userInfoDTO;
+                    }).collect(Collectors.toMap(UserInfoDTO::getUserId, u -> u));
             Map<Integer, CompanyDTO> mapCompanyDTO = companyReps.findByUserIdIn(userIds)
                     .stream().map(companyMapper::to).collect(Collectors.toMap(CompanyDTO::getUserId, c -> c));
 
