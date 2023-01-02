@@ -257,4 +257,22 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
         }
         return null;
     }
+
+    @Override
+    public Integer viewProfile(Long profileId) {
+        Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findById(profileId);
+
+        if (recruitmentProfileOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        }
+
+        if (recruitmentProfileOptional.get().getView() == null) {
+            recruitmentProfileOptional.get().setView(0);
+        }
+
+        recruitmentProfileOptional.get().setView(recruitmentProfileOptional.get().getView() + 1);
+        recruitmentProfileReps.save(recruitmentProfileOptional.get());
+
+        return recruitmentProfileOptional.get().getView();
+    }
 }

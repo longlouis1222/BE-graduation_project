@@ -11,10 +11,13 @@ import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
 import com.hau.huylong.graduation_proejct.service.RecruitmentProfileService;
 import com.hau.huylong.graduation_proejct.service.UserService;
 import io.swagger.annotations.Api;
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/recruitments")
@@ -47,6 +50,22 @@ public class RecruitmentController {
     @GetMapping("/user-id")
     public ResponseEntity<APIResponse<RecruitmentProfileDTO>> findByUserId() {
         return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.findByUserId()));
+    }
+
+    @GetMapping("/save-list")
+    public ResponseEntity<APIResponse<Void>> saveList(@RequestParam List<Long> ids) {
+        recruitmentProfileService.saveListProfile(ids);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @GetMapping("/get-list-id")
+    public ResponseEntity<APIResponse<List<RecruitmentProfileDTO>>> getList(@RequestParam List<Long> ids) {
+        return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.getByListProfileId(ids)));
+    }
+
+    @GetMapping("/get-view")
+    public ResponseEntity<APIResponse<Integer>> getView(@RequestParam Long id) {
+        return ResponseEntity.ok(APIResponse.success(recruitmentProfileService.viewProfile(id)));
     }
 
     @GetMapping("/active-search")
