@@ -224,8 +224,11 @@ public class UserServiceImpl implements UserService {
         if (userIds != null && !userIds.isEmpty()) {
             List<User> users = userReps.findByIds(userIds);
             List<UserInfo> userInfos = userInfoReps.findByUserIdIn(userIds);
-            if (!users.isEmpty() && !userInfos.isEmpty()) {
+            if (!users.isEmpty()) {
                 userReps.deleteAll(users);
+            }
+
+            if (!userInfos.isEmpty()) {
                 userInfoReps.deleteAll(userInfos);
             }
         }
