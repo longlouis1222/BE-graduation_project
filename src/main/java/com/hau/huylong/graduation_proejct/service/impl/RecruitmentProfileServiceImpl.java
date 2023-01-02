@@ -237,25 +237,38 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     }
 
     @Override
-    public List<RecruitmentProfileDTO> getByListProfileId(List<Long> ids) {
+    public List<RecruitmentProfileDTO> getByListProfileId() {
         ObjectMapper objectMapper = new ObjectMapper();
-        if (ids != null && !ids.isEmpty()) {
-            List<RecruitmentProfile> recruitmentProfiles = recruitmentProfileReps.findByIdIn(ids);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
 
-            if (recruitmentProfiles.isEmpty()) {
-                throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
-            }
+        Optional<UserInfo> userOptional = userInfoReps.findByUserId(customUser.getId());
 
-            List<RecruitmentProfileDTO> recruitmentProfileDTOS = recruitmentProfiles.stream()
-                    .map(recruitmentProfileMapper::to).collect(Collectors.toList());
-
-            if (!recruitmentProfileDTOS.isEmpty()) {
-                recruitmentProfileDTOS.forEach(r -> setDTOProfile(objectMapper, r));
-            }
-
-            return recruitmentProfileDTOS;
+        if (userOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng!");
         }
-        return null;
+
+        List<Long> profileIds;
+        try {
+            profileIds = objectMapper.readValue(userOptional.get().getArrRecruitmentIds(), List.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<RecruitmentProfile> recruitmentProfiles = recruitmentProfileReps.findByIdIn(profileIds);
+
+        if (recruitmentProfiles.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        }
+
+        List<RecruitmentProfileDTO> recruitmentProfileDTOS = recruitmentProfiles.stream()
+                .map(recruitmentProfileMapper::to).collect(Collectors.toList());
+
+        if (!recruitmentProfileDTOS.isEmpty()) {
+            recruitmentProfileDTOS.forEach(r -> setDTOProfile(objectMapper, r));
+        }
+
+        return recruitmentProfileDTOS;
     }
 
     @Override

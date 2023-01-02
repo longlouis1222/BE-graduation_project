@@ -73,6 +73,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public PageDataResponse<UserDTO> getAll(UserRequest request) {
+        if (request.getType() != null) {
+            if (request.getType().equalsIgnoreCase("employer")) {
+                request.setTypeUser(TypeUser.EMPLOYER);
+            } else {
+                request.setTypeUser(TypeUser.CANDIDATE);
+            }
+        }
+
         ObjectMapper objectMapper = new ObjectMapper();
         Pageable pageable = PageableUtils.of(request.getPage(), request.getSize());
         Map<Integer, UserInfoDTO> mapUserInfo = userInfoReps.getListUserInfo()

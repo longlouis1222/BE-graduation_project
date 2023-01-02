@@ -22,7 +22,7 @@ public interface UserReps extends JpaRepository<User, Integer> {
             " ON u.id = ui.userId " +
             "WHERE (:#{#request.username} IS NULL OR u.username = :#{#request.username}) " +
             " AND (:#{#request.email} IS NULL OR u.email = :#{#request.email}) " +
-            " AND (:#{#request.type} IS NULL OR u.type = :#{#request.type}) " +
+            " AND (:#{#request.typeUser} IS NULL OR u.type = :#{#request.typeUser}) " +
             " AND (:#{#request.status} IS NULL OR u.status = :#{#request.status}) " +
             "ORDER BY u.id desc")
     Page<User> search(UserRequest request, Pageable pageable);
