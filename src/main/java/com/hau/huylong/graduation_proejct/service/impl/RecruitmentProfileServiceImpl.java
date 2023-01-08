@@ -160,7 +160,8 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
         CustomUser customUser = (CustomUser) authentication.getPrincipal();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps.findByUserId(customUser.getId().longValue());
+        Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps
+                .findByUserId(customUser.getId().longValue());
 
         if (recruitmentProfileOptional.isEmpty()) {
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");

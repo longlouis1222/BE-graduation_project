@@ -31,12 +31,4 @@ public class SearchRecruitmentProfileRequest extends SearchRequest {
     private String address;
     // mục tiêu nghề nghiệp
     private String careerTarget;
-    // Kinh nghiệm làm việc
-    private WorkExperienceDTO workExperience;
-    // Thông tin học vấn
-    private AcademyInfoDTO academyInfo;
-    // Ngoại ngữ
-    private ForeignLanguageDTO foreignLanguage;
-    // Tin học
-    private OfficeInfoDTO officeInfo;
 }

@@ -30,6 +30,8 @@ public interface RecruitmentProfileReps extends JpaRepository<RecruitmentProfile
             " ORDER BY i.id desc ")
     Page<RecruitmentProfile> search(SearchRecruitmentProfileRequest request, Pageable pageable);
 
+    @Query("select i from RecruitmentProfile i where (:userId IS NULL OR i.userId = :userId) " +
+            "AND i.created = (select max(r.created) from RecruitmentProfile r where (:userId IS NULL OR r.userId = :userId)) ")
     Optional<RecruitmentProfile> findByUserId(Long userId);
 
     List<RecruitmentProfile> findByIdIn(List<Long> ids);
