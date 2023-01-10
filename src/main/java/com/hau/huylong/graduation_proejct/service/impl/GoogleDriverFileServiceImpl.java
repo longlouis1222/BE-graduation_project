@@ -81,13 +81,14 @@ public class GoogleDriverFileServiceImpl implements GoogleDriverFile {
     }
 
     @Override
-    public String downloadFile(String id, OutputStream outputStream, HttpServletResponse response) throws IOException, GeneralSecurityException {
-        File file = googleFileManager.getFileById(id);
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    public byte[] downloadFile(String id, OutputStream outputStream, HttpServletResponse response) throws IOException, GeneralSecurityException {
+        File file = googleFileManager.getFileById(id)
+                ;
+        response.setContentType(file.getMimeType());
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
         googleFileManager.downloadFile(id, outputStream);
         outputStream = new ByteArrayOutputStream();
-        return Base64.getEncoder().encodeToString(((ByteArrayOutputStream) outputStream).toByteArray());
+        return ((ByteArrayOutputStream) outputStream).toByteArray();
     }
 
     @Override
