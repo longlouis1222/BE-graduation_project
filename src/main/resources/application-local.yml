@@ -1,6 +1,8 @@
 server:
   port: 8085
 spring:
+  main:
+    allow-bean-definition-overriding: true
   config:
     use-legacy-processing: true
   profiles:
@@ -33,12 +35,11 @@ spring:
   mvc:
     path match:
       matching-strategy: ant_path_matcher
-  main:
-    allow-bean-definition-overriding: true
 
 inventory:
   logs:
     path: ./logs/development
+<<<<<<< HEAD
 
 port-fe: 8080
 
@@ -54,3 +55,5 @@ application:
     add-emails-in-cc-address:
 
 
+=======
+>>>>>>> d0c83761b032e5fa48bf7d443479557e3b84e38e
