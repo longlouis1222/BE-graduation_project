@@ -1,5 +1,6 @@
 package com.hau.huylong.graduation_proejct.model.dto.hau;
 
+import com.hau.huylong.graduation_proejct.model.dto.auth.UserDTO;
 import lombok.Data;
 
 import java.util.Date;
@@ -59,4 +60,8 @@ public class RecruitmentProfileDTO {
     private OfficeInfoDTO officeInfoDTO;
 
     private Integer view;
+
+    private UserDTO userDTO;
+
+    private Date timeSubmit;
 }

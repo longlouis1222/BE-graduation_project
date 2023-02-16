@@ -1,6 +1,8 @@
 package com.hau.huylong.graduation_proejct.repository.hau;
 
 import com.hau.huylong.graduation_proejct.entity.hau.Post;
+import com.hau.huylong.graduation_proejct.entity.hau.UserPost;
+import com.hau.huylong.graduation_proejct.entity.hau.UserRecruitmentPost;
 import com.hau.huylong.graduation_proejct.model.request.SearchPostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,9 +13,15 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PostReps extends JpaRepository<Post, Long> {
+public interface UserRecruitmentPostReps extends JpaRepository<UserRecruitmentPost, Long> {
+    List<UserRecruitmentPost> findByUserId(Integer userId);
+    List<UserRecruitmentPost> findByUserIdInAndCompanyIdIn(List<Integer> userId, List<Long> companyIds);
+    List<UserRecruitmentPost> findByCompanyIdIn(List<Long> companyIds);
+    List<UserRecruitmentPost> findByUserIdAndPostId(Integer userId, Long postId);
+
     @Query("select i from Post i " +
             " WHERE (:#{#request.industryId} IS NULL OR i.industryId = :#{#request.industryId}) " +
+            " AND  (i.id IN :postIds) " +
             " AND (:#{#request.salaryMax} IS NULL OR i.salaryMax <= :#{#request.salaryMax}) " +
             " AND (:#{#request.salaryMin} IS NULL OR i.salaryMin >= :#{#request.salaryMin}) " +
             " AND (:#{#request.companyId} IS NULL OR i.companyId = :#{#request.companyId}) " +
@@ -36,8 +44,5 @@ public interface PostReps extends JpaRepository<Post, Long> {
             " AND (:#{#request.status} IS NULL OR i.status LIKE %:#{#request.status}%) " +
             " AND (:#{#request.isOutstanding} IS NULL OR i.isOutstanding = :#{#request.isOutstanding}) " +
             " ORDER BY i.id desc ")
-    Page<Post> search(SearchPostRequest request, Pageable pageable);
-
-    List<Post> findByIdIn(List<Long> postIds);
-    List<Post> findByCompanyIdIn(List<Long> companyIdIn);
+    Page<Post> search(SearchPostRequest request, List<Long> postIds, Pageable pageable);
 }

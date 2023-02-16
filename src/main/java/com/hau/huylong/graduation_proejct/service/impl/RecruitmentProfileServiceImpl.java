@@ -6,17 +6,23 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hau.huylong.graduation_proejct.common.exception.APIException;
 import com.hau.huylong.graduation_proejct.common.util.BeanUtil;
 import com.hau.huylong.graduation_proejct.common.util.PageableUtils;
+import com.hau.huylong.graduation_proejct.common.util.StringUtils;
 import com.hau.huylong.graduation_proejct.entity.auth.CustomUser;
 import com.hau.huylong.graduation_proejct.entity.hau.RecruitmentProfile;
 import com.hau.huylong.graduation_proejct.entity.hau.UserInfo;
+import com.hau.huylong.graduation_proejct.model.dto.auth.UserDTO;
+import com.hau.huylong.graduation_proejct.model.dto.auth.UserInfoDTO;
 import com.hau.huylong.graduation_proejct.model.dto.hau.*;
 import com.hau.huylong.graduation_proejct.model.request.SearchRecruitmentProfileRequest;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
 import com.hau.huylong.graduation_proejct.repository.auth.UserInfoReps;
+import com.hau.huylong.graduation_proejct.repository.auth.UserReps;
 import com.hau.huylong.graduation_proejct.repository.hau.RecruitmentProfileReps;
 import com.hau.huylong.graduation_proejct.service.GoogleDriverFile;
 import com.hau.huylong.graduation_proejct.service.RecruitmentProfileService;
 import com.hau.huylong.graduation_proejct.service.mapper.RecruitmentProfileMapper;
+import com.hau.huylong.graduation_proejct.service.mapper.UserInfoMapper;
+import com.hau.huylong.graduation_proejct.service.mapper.UserMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,10 +31,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +46,9 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     private final RecruitmentProfileReps recruitmentProfileReps;
     private final GoogleDriverFile googleDriverFile;
     private final UserInfoReps userInfoReps;
+    private final UserInfoMapper userInfoMapper;
+    private final UserReps userReps;
+    private final UserMapper userMapper;
 
     @Override
     public RecruitmentProfileDTO save(RecruitmentProfileDTO recruitmentProfileDTO) {
@@ -113,9 +123,17 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
         }
 
+        return getRecruitmentProfileDTO(objectMapper, recruitmentProfileOptional);
+    }
+
+    private RecruitmentProfileDTO getRecruitmentProfileDTO(ObjectMapper objectMapper, Optional<RecruitmentProfile> recruitmentProfileOptional) {
         RecruitmentProfileDTO recruitmentProfileDTO = recruitmentProfileMapper.to(recruitmentProfileOptional.get());
 
         setDTOProfile(objectMapper, recruitmentProfileDTO);
+        Map<Integer, UserDTO> mapUser = getUser(Collections.singletonList(recruitmentProfileDTO.getUserId()));
+        if (!mapUser.isEmpty() && mapUser.containsKey(recruitmentProfileDTO.getUserId().intValue())) {
+            recruitmentProfileDTO.setUserDTO(mapUser.get(recruitmentProfileDTO.getUserId().intValue()));
+        }
 
         return recruitmentProfileDTO;
     }
@@ -127,7 +145,14 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
         Page<RecruitmentProfileDTO> page = recruitmentProfileReps.search(request, pageable).map(recruitmentProfileMapper::to);
 
         if (!page.isEmpty()) {
-            page.forEach(p -> setDTOProfile(objectMapper, p));
+            List<Long> userIds = page.map(RecruitmentProfileDTO::getUserId).toList();
+            Map<Integer, UserDTO> mapUser = getUser(userIds);
+            page.forEach(p -> {
+                setDTOProfile(objectMapper, p);
+                if (!mapUser.isEmpty() && mapUser.containsKey(p.getUserId().intValue())) {
+                    p.setUserDTO(mapUser.get(p.getUserId().intValue()));
+                }
+            });
         }
 
         return PageDataResponse.of(page);
@@ -163,15 +188,11 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
         Optional<RecruitmentProfile> recruitmentProfileOptional = recruitmentProfileReps
                 .findByUserId(customUser.getId().longValue());
 
-        if (recruitmentProfileOptional.isEmpty()) {
-            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        if (recruitmentProfileOptional.isPresent()) {
+            return getRecruitmentProfileDTO(objectMapper, recruitmentProfileOptional);
         }
 
-        RecruitmentProfileDTO recruitmentProfileDTO = recruitmentProfileMapper.to(recruitmentProfileOptional.get());
-
-        setDTOProfile(objectMapper, recruitmentProfileDTO);
-
-        return recruitmentProfileDTO;
+        return null;
     }
 
     @Override
@@ -195,7 +216,7 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
     }
 
     @Override
-    public void uploadProfile(MultipartFile file, String filePath, boolean isPublic) {
+    public String uploadProfile(MultipartFile file, String filePath, boolean isPublic) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUser customUser = (CustomUser) authentication.getPrincipal();
 
@@ -212,6 +233,8 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
 
             recruitmentProfileReps.save(recruitmentProfile);
         }
+
+        return fileId;
     }
 
     @Override
@@ -226,7 +249,7 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng!");
         }
 
-        if (ids != null && !ids.isEmpty()) {
+        if (ids != null) {
             try {
                 userOptional.get().setArrRecruitmentIds(objectMapper.writeValueAsString(ids));
             } catch (JsonProcessingException e) {
@@ -234,11 +257,23 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
             }
         }
 
+        if (!CollectionUtils.isEmpty(ids)) {
+            List<RecruitmentProfile> recruitmentProfilesUpdate = new ArrayList<>();
+            List<RecruitmentProfile> recruitmentProfiles = recruitmentProfileReps.findByIdIn(ids);
+            if (!CollectionUtils.isEmpty(recruitmentProfiles)) {
+                recruitmentProfiles.forEach(r -> {
+                    r.setTimeSubmit(Date.from(Instant.now()));
+                    recruitmentProfilesUpdate.add(r);
+                });
+            }
+
+            recruitmentProfileReps.saveAll(recruitmentProfilesUpdate);
+        }
+
         userInfoReps.save(userOptional.get());
     }
 
-    @Override
-    public List<RecruitmentProfileDTO> getByListProfileId() {
+    public void removeProfileRecruitment(Long profileId) {
         ObjectMapper objectMapper = new ObjectMapper();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUser customUser = (CustomUser) authentication.getPrincipal();
@@ -249,27 +284,77 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
             throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng!");
         }
 
-        List<Long> profileIds;
+        List<Long> profileIds = new ArrayList<>();
+        if (!StringUtils.isNullOrEmpty(userOptional.get().getArrRecruitmentIds())) {
+            try {
+                List<Integer> profileRecruitmentIds = objectMapper.readValue(userOptional.get().getArrRecruitmentIds(), List.class);
+                if (!CollectionUtils.isEmpty(profileRecruitmentIds)) {
+                    profileRecruitmentIds.forEach(i -> profileIds.add(Long.parseLong(String.valueOf(i))));
+                }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (!CollectionUtils.isEmpty(profileIds)) {
+            profileIds.remove(profileId);
+
+            try {
+                String profileIdString = objectMapper.writeValueAsString(profileIds);
+                userOptional.get().setArrRecruitmentIds(profileIdString);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            userInfoReps.save(userOptional.get());
+        }
+    }
+
+    @Override
+    public PageDataResponse<RecruitmentProfileDTO> getByListProfileId(SearchRecruitmentProfileRequest request) {
+        Pageable pageable = PageableUtils.of(request.getPage(), request.getSize());
+        Page<RecruitmentProfileDTO> recruitmentProfileDTOS = null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser customUser = (CustomUser) authentication.getPrincipal();
+
+        Optional<UserInfo> userOptional = userInfoReps.findByUserId(customUser.getId());
+
+        if (userOptional.isEmpty()) {
+            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy người dùng!");
+        }
+
+        List<Long> profileIds = new ArrayList<>();
         try {
-            profileIds = objectMapper.readValue(userOptional.get().getArrRecruitmentIds(), List.class);
+            if (!StringUtils.isNullOrEmpty(userOptional.get().getArrRecruitmentIds())) {
+                List<Integer> list = objectMapper.readValue(userOptional.get().getArrRecruitmentIds(), List.class);
+                if (!CollectionUtils.isEmpty(list)) {
+                    list.forEach(i -> profileIds.add(Long.parseLong(String.valueOf(i))));
+                }
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        List<RecruitmentProfile> recruitmentProfiles = recruitmentProfileReps.findByIdIn(profileIds);
 
-        if (recruitmentProfiles.isEmpty()) {
-            throw APIException.from(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy hồ sơ tuyển dụng");
+        if (!CollectionUtils.isEmpty(profileIds)) {
+            recruitmentProfileDTOS = recruitmentProfileReps.getListProfile(request, profileIds, pageable).map(recruitmentProfileMapper::to);
+
+            if (!recruitmentProfileDTOS.isEmpty()) {
+                List<Long> userIds = recruitmentProfileDTOS.stream().map(RecruitmentProfileDTO::getUserId).collect(Collectors.toList());
+                Map<Integer, UserDTO> mapUser = getUser(userIds);
+
+                recruitmentProfileDTOS.forEach(r -> {
+                    setDTOProfile(objectMapper, r);
+
+                    if (!CollectionUtils.isEmpty(mapUser) && mapUser.containsKey(r.getUserId().intValue())) {
+                        r.setUserDTO(mapUser.get(r.getUserId().intValue()));
+                    }
+                });
+            }
         }
 
-        List<RecruitmentProfileDTO> recruitmentProfileDTOS = recruitmentProfiles.stream()
-                .map(recruitmentProfileMapper::to).collect(Collectors.toList());
-
-        if (!recruitmentProfileDTOS.isEmpty()) {
-            recruitmentProfileDTOS.forEach(r -> setDTOProfile(objectMapper, r));
-        }
-
-        return recruitmentProfileDTOS;
+        return PageDataResponse.of(recruitmentProfileDTOS);
     }
 
     @Override
@@ -288,5 +373,34 @@ public class RecruitmentProfileServiceImpl implements RecruitmentProfileService 
         recruitmentProfileReps.save(recruitmentProfileOptional.get());
 
         return recruitmentProfileOptional.get().getView();
+    }
+
+    private Map<Integer, UserDTO> getUser(List<Long> userIds) {
+        Map<Integer, UserDTO> map = new HashMap<>();
+
+        if (userIds != null && !userIds.isEmpty()) {
+            List<Integer> userIdInts = new ArrayList<>();
+            userIds.forEach(u -> userIdInts.add(Integer.parseInt(String.valueOf(u))));
+            map = userReps.findByIds(userIdInts).stream().map(userMapper::to).collect(Collectors.toMap(UserDTO::getId, u -> u));
+            Map<Integer, UserInfoDTO> mapUserInfo = getUseInfo(userIdInts);
+            if (!map.isEmpty()) {
+                map.forEach((k, v) -> {
+                    if (!mapUserInfo.isEmpty() && mapUserInfo.containsKey(k)) {
+                        v.setUserInfoDTO(mapUserInfo.get(k));
+                    }
+                });
+            }
+        }
+
+        return map;
+    }
+
+    private Map<Integer, UserInfoDTO> getUseInfo(List<Integer> userIds) {
+        Map<Integer, UserInfoDTO> map = new HashMap<>();
+        if (userIds != null && !userIds.isEmpty()) {
+             map = userInfoReps.findByUserIdIn(userIds).stream().map(userInfoMapper::to)
+                     .collect(Collectors.toMap(UserInfoDTO::getUserId, ui -> ui));
+        }
+        return map;
     }
 }

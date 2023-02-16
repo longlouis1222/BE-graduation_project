@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Entity
 @Table(name = "recruitment_profile")
@@ -73,4 +74,7 @@ public class RecruitmentProfile extends BaseEntity {
 
     @Column(name = "view")
     private Integer view;
+
+    @Column(name = "time_submit")
+    private Date timeSubmit;
 }

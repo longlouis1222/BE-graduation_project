@@ -1,8 +1,6 @@
 server:
   port: 8085
 spring:
-  main:
-    allow-bean-definition-overriding: true
   config:
     use-legacy-processing: true
   profiles:
@@ -23,7 +21,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: longnguyenhuy1402@gmail.com
-    password: owaiyvxoemmjxdhi
+    password: ryuszlvxezlsqegt
     properties:
       mail:
         transport:
@@ -35,11 +33,12 @@ spring:
   mvc:
     path match:
       matching-strategy: ant_path_matcher
+  main:
+    allow-bean-definition-overriding: true
 
 inventory:
   logs:
     path: ./logs/development
-<<<<<<< HEAD
 
 port-fe: 8080
 
@@ -55,5 +54,3 @@ application:
     add-emails-in-cc-address:
 
 
-=======
->>>>>>> d0c83761b032e5fa48bf7d443479557e3b84e38e

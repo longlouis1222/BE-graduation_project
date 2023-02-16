@@ -32,4 +32,12 @@ public class Company extends BaseEntity {
     private String fieldOfActivity;
     @Column(name = "user_id")
     private Integer userId;
+    @Column(name = "file_id")
+    private String fileId;
+    // giấy phép kinh doanh
+    @Column(name = "business_license")
+    private String businessLicense;
+    // giới thiệu doanh nghiệp
+    @Column(name = "business_introduction")
+    private String businessIntroduction;
 }

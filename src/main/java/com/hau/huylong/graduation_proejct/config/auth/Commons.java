@@ -18,7 +18,7 @@ public class Commons {
     public static final String DEFAULT_ROLE = "DEFAULT";
 
     public static final String[] PUBLIC_URLs = new String[]{LOGIN_URL, REFRESH_TOKEN, SIGN_UP_URL,
-            ACTIVE_URL, "/", DOWN_FILE_GG_DRIVER, FORGOT_PASS, UPDATE_PASS};
+            ACTIVE_URL, "/", DOWN_FILE_GG_DRIVER, FORGOT_PASS, UPDATE_PASS, "/companys/**", "/posts/**", "/industries/**"};
 
     public static String jwtSubject(User user) {
         return user.getUsername();

@@ -12,4 +12,6 @@ public class SearchCompanyRequest extends SearchRequest{
     private String location;
     private String companyPhoneNumber;
     private String fieldOfActivity;
+    private String businessLicense;
+    private String businessIntroduction;
 }

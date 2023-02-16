@@ -8,6 +8,7 @@ import com.hau.huylong.graduation_proejct.model.response.APIResponse;
 import com.hau.huylong.graduation_proejct.model.response.PageDataResponse;
 import com.hau.huylong.graduation_proejct.service.PostService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,5 +44,30 @@ public class PostController {
     @GetMapping
     public ResponseEntity<APIResponse<PageDataResponse<PostDTO>>> getAll(SearchPostRequest request) {
         return ResponseEntity.ok(APIResponse.success(postService.getAll(request)));
+    }
+
+    @GetMapping("/user-current-save")
+    @ApiOperation(value = "Người dùng hiện tại lưu bài viết")
+    public ResponseEntity<APIResponse<Void>> userCurrentSavePost(@RequestParam Long postId) {
+        postService.currentUserSavePost(postId);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @GetMapping("/remove-post-saved")
+    @ApiOperation(value = "Xóa bài viết người dùng hiện tại đa lưu")
+    public ResponseEntity<APIResponse<Void>> userCurrentRemovePost(@RequestParam Long postId) {
+        postService.removePostByCurrentUserSave(postId);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @GetMapping("/get-view")
+    public ResponseEntity<APIResponse<Integer>> getView(@RequestParam Long id) {
+        return ResponseEntity.ok(APIResponse.success(postService.viewProfile(id)));
+    }
+
+    @GetMapping("/get-list-user-save")
+    @ApiOperation(value = "Lấy danh sách bài viết người dùng hiện tại đã lưu")
+    public ResponseEntity<APIResponse<PageDataResponse<PostDTO>>> getListPostOfUserCurrent(SearchPostRequest request) {
+        return ResponseEntity.ok(APIResponse.success(postService.getAllPostCurrentUserSave(request)));
     }
 }
